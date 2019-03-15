@@ -17,16 +17,19 @@ args_valid?	lib/docset_generator.ex	/^  defp args_valid?([dir | other_args]) do$
 collect_all_entries	lib/worker_parser.exs	/^  def collect_all_entries(filepath) do$/;"	f
 deps	mix.exs	/^  defp deps do$/;"	f
 greets the world	test/docset_generator_test.exs	/^  test "greets the world" do$/;"	t
-handle_call	lib/indexer.exs	/^  def handle_call(%{:report_result, entry}, state) do$/;"	f
-handle_cast	lib/indexer.exs	/^  def handle_cast({:report_error, error, filepath}, state) do$/;"	f
-handle_info	lib/indexer.exs	/^  def handle_info({:finish}, state) do$/;"	f
-index	lib/indexer.exs	/^  def index(dir) do$/;"	f
-init	lib/indexer.exs	/^  def init(dir) do$/;"	f
+handle_call	lib/indexer.exs	/^  def handle_call({:filepath, filepath}, state) do$/;"	f
+handle_call	lib/indexer.exs	/^  def handle_call({:report_error, error, filepath}, state) do$/;"	f
+handle_call	lib/indexer.exs	/^  def handle_call({:report_result, entry}, state) do$/;"	f
+handle_info	lib/indexer.exs	/^  def handle_info({:directory_crawler_done}, state) do$/;"	f
+handle_info	lib/indexer.exs	/^  def handle_info({:task_done}, state) do$/;"	f
+index	lib/indexer.exs	/^  def index(root) do$/;"	f
+init	lib/indexer.exs	/^  def init(root) do$/;"	f
 main	lib/docset_generator.ex	/^  def main(args \\\\ []) do$/;"	f
 parse_entries	lib/worker_parser.exs	/^  def parse_entries(filepath) do$/;"	f
 project	mix.exs	/^  def project do$/;"	f
 report_error	lib/indexer.exs	/^  def report_error(error, filepath) do$/;"	f
 report_result	lib/indexer.exs	/^  def report_result(entry) do$/;"	f
+schedule_work	lib/indexer.exs	/^  defp schedule_work(filepath, state) do$/;"	f
 start_dir_search	lib/docset_generator.ex	/^  defp start_dir_search(dir) do$/;"	f
 start_link	lib/worker_parser.exs	/^  def start_link() do$/;"	f
 start_link	lib/worker_parser.exs	/^  def start_link(filepath) do$/;"	f
