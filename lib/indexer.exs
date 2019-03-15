@@ -28,7 +28,7 @@ defmodule DocsetGenerator.Indexer do
 
   @impl GenServer
   def handle_call(%{:report_result, entry}, state) do
-    new_state = state |> Kernel.put_in(state[:entries], entry)
+    new_state = state |> put_in(state[:entries], [ entry | state[:entries] ])
     {:ok, new_state, new_state}
   end
 
