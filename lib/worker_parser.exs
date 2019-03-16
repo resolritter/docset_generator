@@ -7,10 +7,11 @@ defmodule DocsetGenerator.WorkerParser do
   end
 
   def parse_entries(filepath) do
-    line_accumulator = LineAccumulator.start_link()
+    line_acc = LineAccumulator.start_link()
+    caller = self()
 
     File.Stream!(filepath)
-    |> LineAccumulator.add_line_to(line_accumulator, self())
+    |> &LineAccumulator.add_line(line_acc, &1, caller)
     |> Stream.run()
 
     collect_all_entries(filepath)
@@ -22,7 +23,7 @@ defmodule DocsetGenerator.WorkerParser do
   def collect_all_entries(filepath) do
     receive do
       {:entry, entry} ->
-        store_entry(filepath)
+        store_entry(entry, filepath)
         wait_for_entries(filepath)
       {:eol} ->
         report_done(filepath)
@@ -31,28 +32,5 @@ defmodule DocsetGenerator.WorkerParser do
 
   def store_entry(entry, filepath) do
     Indexer.report_result(Map.put(entry, :filepath, filepath))
-  end
-end
-
-defmodule DocsetGenerator.WorkerParser.LineAccumulator do
-  def start_link() do
-    Agent.start_link(%{:lines_read => 0, :acc => "" })
-  end
-
-  def add_line_to(line, line_accumulator, caller) do
-    case line do
-      line ->
-        Agent.update(self(), fn %{:lines_read => lr, :acc => acc} ->
-          accumulated_string = acc <> line
-          case attempt_match_entry(accumulated_string) do
-            entry ->
-              send(caller, entry)
-              %{:lines_read => lr + 1, :acc => ""}
-            nil ->
-              %{:lines_read => lr + 1, :acc => accumulated_string}
-          end
-        end)
-      :ok -> send(caller, :eol)
-    end
   end
 end
