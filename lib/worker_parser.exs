@@ -14,7 +14,7 @@ defmodule DocsetGenerator.WorkerParser do
     |> &LineAccumulator.add_line(line_acc, &1, caller)
     |> Stream.run()
 
-    collect_all_entries(filepath)
+    collect_all_entries(filepath, caller)
 
     rescue
     err -> err |> Indexer.report_error(filepath)
@@ -23,14 +23,10 @@ defmodule DocsetGenerator.WorkerParser do
   def collect_all_entries(filepath) do
     receive do
       {:entry, entry} ->
-        store_entry(entry, filepath)
-        wait_for_entries(filepath)
+        Indexer.new_entry(Map.put(entry, :filepath, filepath))
+        collect_all_entries(filepath)
       {:eol} ->
-        report_done(filepath)
+        Indexer.task_done(self())
     end
-  end
-
-  def store_entry(entry, filepath) do
-    Indexer.report_result(Map.put(entry, :filepath, filepath))
   end
 end

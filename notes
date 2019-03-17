@@ -1,0 +1,52 @@
+#t:.*/[0-9]+ - types
+#c:.*/[0-9]+ - callbacks
+#.*/[0-9]+ - functions
+id="module-.+" class="section-heading" - guides?
+
+## modules
+<div class="content-outer">
+    <div id="content" class="content-inner">
+      <h1>
+        <small class="visible-xs">Phoenix v1.4.2</small>
+        -- name here --
+        <small>-- qualifier here --</small>
+        <a class="view-source"...
+        
+qualifier can be behaviour, exception, or nothing (pure module)
+
+
+  #
+  # GenServer stuff
+  #
+  @impl GenServer
+  def handle_call({:report_result, entry}, state) do
+    {:ok, nil, Map.update(state, :entries, &[entry | &1])}
+  end
+
+  @impl GenServer
+  def handle_call({:all_work_done, final_state}, _) do
+    final_state[:workers] |> Enum.map(&Task.await())
+    final_state |> create_index_database
+    {:ok, nil, final_state}
+  end
+
+  @impl GenServer
+  def handle_call({:filepath, filepath}, state) do
+    {:ok, nil, schedule_work(filepath, state)}
+  end
+
+  @impl GenServer
+  def handle_info({:task_done}, state) do
+  end
+
+  @impl GenServer
+  def handle_info({:directory_crawler_done}, state) do
+    {:ok, Map.update!(state, :directory_crawler_done, true)}
+  end
+
+  @impl GenServer
+  def handle_info({:report_error, error, filepath}, state) do
+    # TODO format error message nicely
+    {:ok, Map.update!(state, :errors, &[error | &1])}
+  end
+

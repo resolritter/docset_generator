@@ -19,22 +19,24 @@ attempt_match_entry	lib/worker_parser/line_accumulator.exs	/^  def attempt_match
 collect_all_entries	lib/worker_parser.exs	/^  def collect_all_entries(filepath) do$/;"	f
 deps	mix.exs	/^  defp deps do$/;"	f
 greets the world	test/docset_generator_test.exs	/^  test "greets the world" do$/;"	t
-handle_call	lib/indexer.exs	/^  def handle_call({:filepath, filepath}, state) do$/;"	f
-handle_call	lib/indexer.exs	/^  def handle_call({:report_error, error, filepath}, state) do$/;"	f
-handle_call	lib/indexer.exs	/^  def handle_call({:report_result, entry}, state) do$/;"	f
-handle_info	lib/indexer.exs	/^  def handle_info({:directory_crawler_done}, state) do$/;"	f
-handle_info	lib/indexer.exs	/^  def handle_info({:task_done}, state) do$/;"	f
-index	lib/indexer.exs	/^  def index(root) do$/;"	f
-init	lib/indexer.exs	/^  def init(root) do$/;"	f
+index_root	lib/indexer.exs	/^  defp index_root(root) do$/;"	f
 main	lib/docset_generator.ex	/^  def main(args \\\\ []) do$/;"	f
-match_module_function	lib/worker_parser/regex_matcher.exs	/^  def match_module_function() do$/;"	f
+match_callback	lib/worker_parser/regex_matcher.exs	/^  def match_callback(str) do$/;"	f
+match_function	lib/worker_parser/regex_matcher.exs	/^  def match_function(str) do$/;"	f
+match_guide	lib/worker_parser/regex_matcher.exs	/^  def match_guide(str) do$/;"	f
+match_module	lib/worker_parser/regex_matcher.exs	/^  def match_module(str) do$/;"	f
+match_module_behaviour	lib/worker_parser/regex_matcher.exs	/^  def match_module_behaviour(str) do$/;"	f
+match_module_exception	lib/worker_parser/regex_matcher.exs	/^  def match_module_exception(str) do$/;"	f
+match_type	lib/worker_parser/regex_matcher.exs	/^  def match_type(str) do$/;"	f
 matcher_functions	lib/worker_parser/regex_matcher.exs	/^  def matcher_functions() do$/;"	f
+new_entry	lib/indexer.exs	/^  def new_entry(entry) do$/;"	f
+new_filepath	lib/indexer.exs	/^  def new_filepath(filepath) do$/;"	f
 parse_entries	lib/worker_parser.exs	/^  def parse_entries(filepath) do$/;"	f
 project	mix.exs	/^  def project do$/;"	f
 report_error	lib/indexer.exs	/^  def report_error(error, filepath) do$/;"	f
-report_result	lib/indexer.exs	/^  def report_result(entry) do$/;"	f
 schedule_work	lib/indexer.exs	/^  defp schedule_work(filepath, state) do$/;"	f
 start_dir_search	lib/docset_generator.ex	/^  defp start_dir_search(dir) do$/;"	f
+start_indexing	lib/indexer.exs	/^  def start_indexing(root) do$/;"	f
 start_link	lib/worker_parser.exs	/^  def start_link(filepath) do$/;"	f
 start_link	lib/worker_parser/line_accumulator.exs	/^  def start_link() do$/;"	f
-store_entry	lib/worker_parser.exs	/^  def store_entry(entry, filepath) do$/;"	f
+task_done	lib/indexer.exs	/^  def task_done(task_pid) do$/;"	f
