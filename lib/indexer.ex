@@ -22,13 +22,13 @@ defmodule DocsetGenerator.Indexer do
       :errors => [],
       :workers => [],
       :filepath_buffer => [],
-      :crawling_done => false
+      :directory_crawling_done => false
     }
   end
 
   def new_entry(entry) do
     Agent.update(__MODULE__, fn state ->
-      Map.update!(state, :entries, &[entry | &1])
+      Map.update!(state, :entries, [entry | state[:entries]])
     end)
   end
 
@@ -61,14 +61,8 @@ defmodule DocsetGenerator.Indexer do
     end)
   end
 
-  def crawling_done() do
-    Agent.update(__MODULE__, fn state ->
-      Map.update!(
-        state,
-        :crawling_done,
-        &true
-      )
-    end)
+  def report_directory_crawling_finished() do
+
   end
 
   defp discovery_work_finished(final_state) do
@@ -80,14 +74,14 @@ defmodule DocsetGenerator.Indexer do
   end
 
   defp await_remaining_jobs(final_state) do
-    final_state[:workers] |> Enum.map(&Task.await(&1))
-    final_state
+    final_state[:workers]
+    |> Enum.map(&Task.await(&1))
+    |> Map.update!(:workers, &[])
   end
 
 
   defp persist_database_entries(final_state) do
-    Persistence.create_database(final_state[:entries])
-    final_state
+
   end
 
   defp schedule_work(filepath, state) do

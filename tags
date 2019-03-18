@@ -5,19 +5,29 @@
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	0.0.0	/0e5cfa3f/
+Chores	README.md	/^## Chores$/;"	s
 DirectoryCrawler	lib/directory_crawler.ex	/^defmodule DocsetGenerator.DirectoryCrawler do$/;"	m
+DocsetGenerator	README.md	/^# DocsetGenerator$/;"	c
 DocsetGenerator	lib/docset_generator.ex	/^defmodule DocsetGenerator do$/;"	m
 DocsetGeneratorTest	test/docset_generator_test.exs	/^defmodule DocsetGeneratorTest do$/;"	m
+Entry-matching	README.md	/^## Entry-matching$/;"	s
 Indexer	lib/indexer.exs	/^defmodule DocsetGenerator.Indexer do$/;"	m
 LineAccumulator	lib/worker_parser/line_accumulator.exs	/^defmodule DocsetGenerator.WorkerParser.LineAccumulator do$/;"	m
 MixProject	mix.exs	/^defmodule DocsetGenerator.MixProject do$/;"	m
+Persistence	README.md	/^## Persistence$/;"	s
+Persistence	lib/persistence.ex	/^defmodule DocsetGenerator.Persistence do$/;"	m
 RegexMatcher	lib/worker_parser/regex_matcher.exs	/^defmodule DocsetGenerator.WorkerParser.RegexMatcher do$/;"	m
+TODO	README.md	/^# TODO$/;"	c
 WorkerParser	lib/worker_parser.exs	/^defmodule DocsetGenerator.WorkerParser do$/;"	m
 add_line	lib/worker_parser/line_accumulator.exs	/^  def add_line(line_acc, line, caller) do$/;"	f
 args_valid?	lib/docset_generator.ex	/^  defp args_valid?([dir | other_args]) do$/;"	f
 attempt_match_entry	lib/worker_parser/line_accumulator.exs	/^  def attempt_match_entry(accumulated_string) do$/;"	f
+await_remaining_jobs	lib/indexer.exs	/^  defp await_remaining_jobs(final_state) do$/;"	f
 collect_all_entries	lib/worker_parser.exs	/^  def collect_all_entries(filepath) do$/;"	f
+crawling_done	lib/indexer.exs	/^  def crawling_done() do$/;"	f
+create_database	lib/persistence.ex	/^  def create_database(entries) do$/;"	f
 deps	mix.exs	/^  defp deps do$/;"	f
+discovery_work_finished	lib/indexer.exs	/^  defp discovery_work_finished(final_state) do$/;"	f
 greets the world	test/docset_generator_test.exs	/^  test "greets the world" do$/;"	t
 index_root	lib/indexer.exs	/^  defp index_root(root) do$/;"	f
 main	lib/docset_generator.ex	/^  def main(args \\\\ []) do$/;"	f
@@ -32,6 +42,7 @@ matcher_functions	lib/worker_parser/regex_matcher.exs	/^  def matcher_functions(
 new_entry	lib/indexer.exs	/^  def new_entry(entry) do$/;"	f
 new_filepath	lib/indexer.exs	/^  def new_filepath(filepath) do$/;"	f
 parse_entries	lib/worker_parser.exs	/^  def parse_entries(filepath) do$/;"	f
+persist_database_entries	lib/indexer.exs	/^  defp persist_database_entries(final_state) do$/;"	f
 project	mix.exs	/^  def project do$/;"	f
 report_error	lib/indexer.exs	/^  def report_error(error, filepath) do$/;"	f
 schedule_work	lib/indexer.exs	/^  defp schedule_work(filepath, state) do$/;"	f
