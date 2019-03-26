@@ -15,7 +15,8 @@ defmodule DocsetGenerator.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      { :dir_walker, github: "pragdave/dir_walker"}
+      {:dir_walker, github: "pragdave/dir_walker"},
+      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
     ]
   end
 end
