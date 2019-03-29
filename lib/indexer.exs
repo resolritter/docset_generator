@@ -1,6 +1,6 @@
 defmodule DocsetGenerator.Indexer do
   use Agent
-  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Indexer}
+  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Indexer, Packager}
 
   #
   # Init methods
@@ -80,14 +80,11 @@ defmodule DocsetGenerator.Indexer do
   end
 
   defp await_remaining_jobs(final_state) do
-    final_state[:workers] |> Enum.map(&Task.await(&1))
-    final_state
+    final_state |> Map.update!(:workers, &(&1 |> Enum.map(&Task.await(&1))))
   end
 
-
   defp persist_database_entries(final_state) do
-    Persistence.create_database(final_state[:entries])
-    final_state
+    final_state[:entries] |> Packager.create_database()
   end
 
   defp schedule_work(filepath, state) do

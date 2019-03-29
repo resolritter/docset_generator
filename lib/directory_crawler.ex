@@ -12,6 +12,9 @@ defmodule DocsetGenerator.DirectoryCrawler do
 
   @impl GenServer
   def handle_call({:next_n, n}, walker) do
-    { :ok, DirWalker.next(walker, n), walker }
+    case DirWalker.next(walker, n) do
+      {:ok, directories} -> {:ok, directories, walker}
+      err -> terminate(err)
+    end
   end
 end

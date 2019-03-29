@@ -1,13 +1,13 @@
 defmodule DocsetGenerator.Indexer do
   use Agent
-  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Indexer, Persistence}
+  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Indexer, Packager}
 
   #
   # Init methods
   #
   @worker_pool_amount 4
   def start_indexing(root) do
-    Agent.start_link(&index_root(root), name: __MODULE__)
+    Agent.start_link(fn -> index_root(root) end, name: __MODULE__)
     initialize_work()
   end
 
@@ -29,16 +29,26 @@ defmodule DocsetGenerator.Indexer do
   end
 
   defp initialize_work() do
-    DirectoryCrawler.get_next_n(
-      :files_supervisor,
+    :files_supervisor
+    |> DirectoryCrawler.get_next_n(
       @worker_pool_amount
     )
-    |> Enum.map(&new_filepath)
+    |> Enum.map(new_filepath)
   end
 
   def new_entry(entry) do
     Agent.update(__MODULE__, fn state ->
-      Map.update!(state, :entries, [entry | state[:entries]])
+      Map.update!(state, :entries, &[entry | &1])
+    end)
+  end
+
+  def new_filepath(:ok) do
+    Agent.update(__MODULE__, fn state ->
+      Map.update!(
+        state,
+        :directory_crawling_done,
+        &true
+      )
     end)
   end
 
@@ -49,13 +59,19 @@ defmodule DocsetGenerator.Indexer do
   end
 
   def task_done(task_pid) do
+    """
+    Informs to the indexer that a task has been done, thus it can remove the task pid from the list of workers to free up space for a waiting filepath from the buffer.
+    """
+
     Agent.update(
       __MODULE__,
       fn state ->
-        Map.update!(
-          state,
-          :workers,
-          &(&1 |> Enum.reject(fn {pid, _} -> pid == task_pid end))
+        schedule_work(
+          Map.update!(
+            state,
+            :workers,
+            &(&1 |> Enum.reject(fn {pid, _} -> pid == task_pid end))
+          )
         )
       end
     )
@@ -71,43 +87,49 @@ defmodule DocsetGenerator.Indexer do
     end)
   end
 
-  def report_directory_crawling_finished() do
-    Agent.update(__MODULE__, fn state ->
-      Map.update!(
-        state,
-        :directory_crawling_done,
-        &true
-      )
-    end)
-  end
-
-  defp discovery_work_finished(final_state) do
+  defp indexing_done(final_state) do
+    """
+    Final step!
+    Waits for the workers to finish and calls the action build the docset with all the accumulated entries.
+    """
     final_state
-    |> await_remaining_jobs()
-    |> persist_database_entries()
-
-    final_state
-  end
-
-  defp await_remaining_jobs(final_state) do
-    final_state[:workers]
-    |> Enum.map(&Task.await(&1))
-    |> Map.update!(:workers, &[])
-  end
-
-  defp persist_database_entries(final_state) do
+    |> Map.update!(:workers, &(&1 |> Enum.map(&(&1 |> Task.await()))))
+    |> DocsetGenerator.final_step_build_docset()
   end
 
   defp spawn_single_worker(filepath) do
-    Task.Supervisor.async(
-      :indexer_workersupervisor,
-      &WorkerParser.start_link(filepath)
-    )
-    |> elem(1)
+    {:ok, pid} =
+      Task.Supervisor.async(
+        :indexer_workersupervisor,
+        &WorkerParser.start_link(filepath)
+      )
+
+    pid
   end
 
-  defp schedule_work(filepath, state) do
-    new_state =
+  defp schedule_work(state) do
+    """
+    Attempts to use any buffered filepath discovered from the crawler.
+    - Updates the state by scheduling work to the first buffered filepath if it's there.
+    - Returns the state if there's no filepath in the buffer to be processed.
+    """
+
+    case state[:filepath_buffer] do
+      [buffered | remaining \\ []] ->
+        schedule_work(state |> Map.update!(:filepath_buffer, &remaining))
+
+      _ ->
+        state
+    end
+  end
+
+  defp schedule_work(state, filepath) do
+    """
+    Attempts to schedule work for a new filepath if the pool is open.
+    Otherwise, pushes the filepath into the buffer for further processing.
+    """
+
+    next_state =
       if length(state[:workers]) < @worker_pool_amount do
         Map.update!(
           state,
@@ -120,11 +142,11 @@ defmodule DocsetGenerator.Indexer do
         Map.update!(state, :filepath_buffer, &[filepath | &1])
       end
 
-    if Enum.empty?(new_state[:filepath_buffer]) &&
-         new_state[:directory_crawling_done] do
-      Indexer.discovery_work_finished(new_state)
+    if Enum.empty?(next_state[:filepath_buffer]) &&
+         next_state[:directory_crawling_done] do
+      Indexer.indexing_done(next_state)
     else
-      new_state
+      next_state
     end
   end
 end
