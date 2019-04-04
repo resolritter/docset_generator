@@ -1,29 +1,38 @@
 defmodule DocsetGenerator do
-  alias DocsetGenerator.{Supervisor, Packager}
+  alias DocsetGenerator.Packager
 
   def main(args \\ []) do
     args
     |> args_valid?
-    |> start_dir_search
+    |> start_dir_search()
   end
 
   defp start_dir_search(dir) do
-    Indexer.index(dir)
+    Indexer.index(%Packager{})
   end
 
   defp args_valid?([dir | other_args]) do
-    unless Enum.empty?(other_args) do
-      IO.puts(
-        "Provide a single argument, which is the directory of the generated doc path"
+    {opts, word, b} =
+      args
+      |> OptionParser.parse(
+        switches: [
+          docs_source: :string,
+          destination: :string,
+          docset_name: :string
+        ]
       )
-
-      Kernel.exit(:too_many_arguments)
-    end
 
     unless File.dir?(dir) do
       IO.puts("Argument provided is not a directory: '#{dir}'")
       Kernel.exit(:not_directory)
     end
+
+    Kernel.exit(IO.puts({opts, word, b}))
+
+    {opts, List.to_string(word)}
+  end
+
+  defp generate_package_information(final_indexer_state) do
   end
 
   defp final_step_build_docset(final_indexer_state) do

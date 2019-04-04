@@ -1,6 +1,6 @@
 defmodule DocsetGenerator.Indexer do
   use Agent
-  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Indexer, Packager}
+  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Indexer}
 
   #
   # Init methods
@@ -33,7 +33,7 @@ defmodule DocsetGenerator.Indexer do
     |> DirectoryCrawler.get_next_n(
       @worker_pool_amount
     )
-    |> Enum.map(new_filepath)
+    |> Enum.map(&(&1 |> new_filepath))
   end
 
   def new_entry(entry) do
