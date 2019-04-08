@@ -59,4 +59,4 @@ start_dir_search	lib/docset_generator.ex	/^  defp start_dir_search(dir) do$/;"	f
 start_indexing	lib/indexer.ex	/^  def start_indexing(root) do$/;"	f
 start_link	lib/worker_parser.ex	/^  def start_link(filepath) do$/;"	f
 start_link	lib/worker_parser/line_accumulator.ex	/^  def start_link() do$/;"	f
-task_done	lib/indexer.ex	/^  def task_done(task_pid) do$/;"	f
+task_done	lib/indexer.ex	/^  def task_done(done_task_pid) do$/;"	f

@@ -30,9 +30,7 @@ defmodule DocsetGenerator.Indexer do
 
   defp initialize_work() do
     :files_supervisor
-    |> DirectoryCrawler.get_next_n(
-      @worker_pool_amount
-    )
+    |> DirectoryCrawler.get_next_n(@worker_pool_amount)
     |> Enum.map(&(&1 |> new_filepath))
   end
 
@@ -47,7 +45,7 @@ defmodule DocsetGenerator.Indexer do
       Map.update!(
         state,
         :directory_crawling_done,
-        &true
+        fn -> true end
       )
     end)
   end
@@ -58,7 +56,7 @@ defmodule DocsetGenerator.Indexer do
     end)
   end
 
-  def task_done(task_pid) do
+  def task_done(done_task_pid) do
     """
     Informs to the indexer that a task has been done, thus it can remove the task pid from the list of workers to free up space for a waiting filepath from the buffer.
     """
@@ -70,7 +68,9 @@ defmodule DocsetGenerator.Indexer do
           Map.update!(
             state,
             :workers,
-            &(&1 |> Enum.reject(fn {pid, _} -> pid == task_pid end))
+            &Enum.reject(&1, fn {worker_pid, _} ->
+              worker_pid == done_task_pid
+            end)
           )
         )
       end
@@ -92,8 +92,11 @@ defmodule DocsetGenerator.Indexer do
     Final step!
     Waits for the workers to finish and calls the action build the docset with all the accumulated entries.
     """
+
     final_state
-    |> Map.update!(:workers, &(&1 |> Enum.map(&(&1 |> Task.await()))))
+    |> Map.update!(:workers, fn worker_list ->
+      Enum.map(worker_list, &Task.await(&1))
+    end)
     |> DocsetGenerator.final_step_build_docset()
   end
 
@@ -101,7 +104,7 @@ defmodule DocsetGenerator.Indexer do
     {:ok, pid} =
       Task.Supervisor.async(
         :indexer_workersupervisor,
-        &WorkerParser.start_link(filepath)
+        &WorkerParser.start_link(&1)
       )
 
     pid
@@ -115,8 +118,11 @@ defmodule DocsetGenerator.Indexer do
     """
 
     case state[:filepath_buffer] do
-      [buffered | remaining \\ []] ->
-        schedule_work(state |> Map.update!(:filepath_buffer, &remaining))
+      [buffered | remaining] ->
+        schedule_work(
+          state
+          |> Map.update!(:filepath_buffer, fn -> remaining || [] end)
+        )
 
       _ ->
         state
@@ -134,7 +140,7 @@ defmodule DocsetGenerator.Indexer do
         Map.update!(
           state,
           :workers,
-          [
+          &[
             spawn_single_worker(filepath) | &1
           ]
         )

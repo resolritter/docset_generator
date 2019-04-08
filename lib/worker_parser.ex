@@ -10,8 +10,8 @@ defmodule DocsetGenerator.WorkerParser do
     line_acc = LineAccumulator.start_link()
     caller = self()
 
-    File.Stream!(filepath)
-    |> &LineAccumulator.add_line(line_acc, &1, caller)
+    File.stream!(filepath)
+    |> &(LineAccumulator.add_line(line_acc, &1, caller))
     |> Stream.run()
 
     collect_all_entries(filepath, caller)
