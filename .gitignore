@@ -24,3 +24,5 @@ docset_generator-*.tar
 
 # binaries
 docset_generator
+
+.elixir_ls/

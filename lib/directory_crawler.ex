@@ -11,10 +11,10 @@ defmodule DocsetGenerator.DirectoryCrawler do
   end
 
   @impl GenServer
-  def handle_call({:next_n, n}, walker) do
+  def handle_call({:next_n, n}, _from, walker) do
     case DirWalker.next(walker, n) do
       {:ok, directories} -> {:ok, directories, walker}
-      err -> terminate(err)
+      err -> exit(IO.puts('Failed to retrieve directories. #{err}'))
     end
   end
 end

@@ -1,17 +1,14 @@
 defmodule DocsetGenerator.Indexer do
+  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Packager}
   use Agent
-  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Indexer}
 
-  #
-  # Init methods
-  #
   @worker_pool_amount 4
   def start_indexing(root) do
     Agent.start_link(fn -> index_root(root) end, name: __MODULE__)
-    initialize_work()
+    request_work()
   end
 
-  defp index_root(root) do
+  defp index_root(%Packager{:doc_directory => root} = packager) do
     children = [
       {DirectoryCrawler, [root], name: :files_supervisor},
       {Task.Supervisor, name: :worker_supervisor}
@@ -24,14 +21,15 @@ defmodule DocsetGenerator.Indexer do
       :errors => [],
       :workers => [],
       :filepath_buffer => [],
-      :directory_crawling_done => false
+      :directory_crawling_done => false,
+      :packager => packager
     }
   end
 
-  defp initialize_work() do
+  defp request_work() do
     :files_supervisor
     |> DirectoryCrawler.get_next_n(@worker_pool_amount)
-    |> Enum.map(&(&1 |> new_filepath))
+    |> Enum.map(&new_filepath(&1))
   end
 
   def new_entry(entry) do
@@ -56,11 +54,10 @@ defmodule DocsetGenerator.Indexer do
     end)
   end
 
+  @doc """
+  Informs to the indexer that a task has been done, thus it can remove the task pid from the list of workers to free up space for a waiting filepath from the buffer.
+  """
   def task_done(done_task_pid) do
-    """
-    Informs to the indexer that a task has been done, thus it can remove the task pid from the list of workers to free up space for a waiting filepath from the buffer.
-    """
-
     Agent.update(
       __MODULE__,
       fn state ->
@@ -87,12 +84,8 @@ defmodule DocsetGenerator.Indexer do
     end)
   end
 
+  # Waits for the workers to finish and calls the action build the docset with all the accumulated entries.
   defp indexing_done(final_state) do
-    """
-    Final step!
-    Waits for the workers to finish and calls the action build the docset with all the accumulated entries.
-    """
-
     final_state
     |> Map.update!(:workers, fn worker_list ->
       Enum.map(worker_list, &Task.await(&1))
@@ -104,24 +97,22 @@ defmodule DocsetGenerator.Indexer do
     {:ok, pid} =
       Task.Supervisor.async(
         :indexer_workersupervisor,
-        &WorkerParser.start_link(&1)
+        fn -> WorkerParser.start_link(filepath) end
       )
 
     pid
   end
 
+  # Attempts to use any buffered filepath discovered from the crawler.
+  # - Updates the state by scheduling work to the first buffered filepath if it's there.
+  # - Returns the state if there's no filepath in the buffer to be processed.
   defp schedule_work(state) do
-    """
-    Attempts to use any buffered filepath discovered from the crawler.
-    - Updates the state by scheduling work to the first buffered filepath if it's there.
-    - Returns the state if there's no filepath in the buffer to be processed.
-    """
-
     case state[:filepath_buffer] do
       [buffered | remaining] ->
         schedule_work(
           state
-          |> Map.update!(:filepath_buffer, fn -> remaining || [] end)
+          |> Map.update!(:filepath_buffer, fn -> remaining or [] end),
+          buffered
         )
 
       _ ->
@@ -129,12 +120,9 @@ defmodule DocsetGenerator.Indexer do
     end
   end
 
+  # Attempts to schedule work for a new filepath if the pool is open.
+  # Otherwise, pushes the filepath into the buffer for further processing.
   defp schedule_work(state, filepath) do
-    """
-    Attempts to schedule work for a new filepath if the pool is open.
-    Otherwise, pushes the filepath into the buffer for further processing.
-    """
-
     next_state =
       if length(state[:workers]) < @worker_pool_amount do
         Map.update!(
@@ -150,7 +138,7 @@ defmodule DocsetGenerator.Indexer do
 
     if Enum.empty?(next_state[:filepath_buffer]) &&
          next_state[:directory_crawling_done] do
-      Indexer.indexing_done(next_state)
+      indexing_done(next_state)
     else
       next_state
     end

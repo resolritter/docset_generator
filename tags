@@ -12,6 +12,7 @@ DocsetGenerator	README.md	/^# DocsetGenerator$/;"	c
 DocsetGenerator	lib/docset_generator.ex	/^defmodule DocsetGenerator do$/;"	m
 DocsetGeneratorTest	test/docset_generator_test.exs	/^defmodule DocsetGeneratorTest do$/;"	m
 Entry-matching	README.md	/^## Entry-matching$/;"	s
+EntryCollector	lib/worker_parser/entry_collector.ex	/^defmodule DocsetGenerator.WorkerParser.EntryCollector do$/;"	m
 Indexer	lib/indexer.ex	/^defmodule DocsetGenerator.Indexer do$/;"	m
 LineAccumulator	lib/worker_parser/line_accumulator.ex	/^defmodule DocsetGenerator.WorkerParser.LineAccumulator do$/;"	m
 MixProject	mix.exs	/^defmodule DocsetGenerator.MixProject do$/;"	m
@@ -21,20 +22,20 @@ RegexMatcher	lib/worker_parser/regex_matcher.ex	/^defmodule DocsetGenerator.Work
 TODO	README.md	/^# TODO$/;"	c
 WorkerParser	lib/worker_parser.ex	/^defmodule DocsetGenerator.WorkerParser do$/;"	m
 add_line	lib/worker_parser/line_accumulator.ex	/^  def add_line(line_acc, line, caller) do$/;"	f
-args_valid?	lib/docset_generator.ex	/^  defp args_valid?([dir | other_args]) do$/;"	f
+args_valid?	lib/docset_generator.ex	/^  defp args_valid?(args) do$/;"	f
 attempt_match_entry	lib/worker_parser/line_accumulator.ex	/^  def attempt_match_entry(accumulated_string) do$/;"	f
-collect_all_entries	lib/worker_parser.ex	/^  def collect_all_entries(filepath) do$/;"	f
+collect_new_entry	lib/worker_parser/entry_collector.ex	/^  def collect_new_entry(filepath, new_entry) do$/;"	f
 copy_directory_to	lib/packager/directory_copier.ex	/^  def copy_directory_to(%Packager{$/;"	f
 deps	mix.exs	/^  defp deps do$/;"	f
 final_step_build_docset	lib/docset_generator.ex	/^  defp final_step_build_docset(final_indexer_state) do$/;"	f
-generate_package_information	lib/docset_generator.ex	/^  defp generate_package_information(final_indexer_state) do$/;"	f
+generate_module_name	lib/worker_parser/entry_collector.ex	/^  defp generate_module_name(filepath) do$/;"	f
+generate_package_name	lib/docset_generator.ex	/^  defp generate_package_name(doc_directory) do$/;"	f
 get_next_n	lib/directory_crawler.ex	/^  def get_next_n(crawler, n) do$/;"	f
 greets the world	test/docset_generator_test.exs	/^  test "greets the world" do$/;"	t
-handle_call	lib/directory_crawler.ex	/^  def handle_call({:next_n, n}, walker) do$/;"	f
-index_root	lib/indexer.ex	/^  defp index_root(root) do$/;"	f
+handle_call	lib/directory_crawler.ex	/^  def handle_call({:next_n, n}, _from, walker) do$/;"	f
+index_root	lib/indexer.ex	/^  defp index_root(%Packager{:doc_directory => root} = packager) do$/;"	f
 indexing_done	lib/indexer.ex	/^  defp indexing_done(final_state) do$/;"	f
 init	lib/directory_crawler.ex	/^  def init(path) do$/;"	f
-initialize_work	lib/indexer.ex	/^  defp initialize_work() do$/;"	f
 main	lib/docset_generator.ex	/^  def main(args \\\\ []) do$/;"	f
 match_callback	lib/worker_parser/regex_matcher.ex	/^  def match_callback(str) do$/;"	f
 match_function	lib/worker_parser/regex_matcher.ex	/^  def match_function(str) do$/;"	f
@@ -51,12 +52,14 @@ package	lib/packager.ex	/^  def package() do$/;"	f
 parse_entries	lib/worker_parser.ex	/^  def parse_entries(filepath) do$/;"	f
 project	mix.exs	/^  def project do$/;"	f
 report_error	lib/indexer.ex	/^  def report_error(error, filepath) do$/;"	f
+request_work	lib/indexer.ex	/^  defp request_work() do$/;"	f
 schedule_work	lib/indexer.ex	/^  defp schedule_work(state) do$/;"	f
 schedule_work	lib/indexer.ex	/^  defp schedule_work(state, filepath) do$/;"	f
 show_packaging_result	lib/packager.ex	/^  def show_packaging_result(packager) do$/;"	f
 spawn_single_worker	lib/indexer.ex	/^  defp spawn_single_worker(filepath) do$/;"	f
-start_dir_search	lib/docset_generator.ex	/^  defp start_dir_search(dir) do$/;"	f
 start_indexing	lib/indexer.ex	/^  def start_indexing(root) do$/;"	f
 start_link	lib/worker_parser.ex	/^  def start_link(filepath) do$/;"	f
+start_link	lib/worker_parser/entry_collector.ex	/^  def start_link(parent_pid, filepath) do$/;"	f
 start_link	lib/worker_parser/line_accumulator.ex	/^  def start_link() do$/;"	f
+stop_collecting	lib/worker_parser/entry_collector.ex	/^  def stop_collecting(filepath) do$/;"	f
 task_done	lib/indexer.ex	/^  def task_done(done_task_pid) do$/;"	f
