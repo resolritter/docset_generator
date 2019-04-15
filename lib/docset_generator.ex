@@ -79,7 +79,7 @@ defmodule DocsetGenerator do
     end)
   end
 
-  defp final_step_build_docset(final_indexer_state) do
+  defp build_docset(final_indexer_state) do
     final_indexer_state
     |> Packager.package()
     |> Packager.show_packaging_results()

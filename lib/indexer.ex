@@ -87,10 +87,7 @@ defmodule DocsetGenerator.Indexer do
   # Waits for the workers to finish and calls the action build the docset with all the accumulated entries.
   defp indexing_done(final_state) do
     final_state
-    |> Map.update!(:workers, fn worker_list ->
-      Enum.map(worker_list, &Task.await(&1))
-    end)
-    |> DocsetGenerator.final_step_build_docset()
+    |> DocsetGenerator.build_docset()
   end
 
   defp spawn_single_worker(filepath) do
@@ -106,41 +103,34 @@ defmodule DocsetGenerator.Indexer do
   # Attempts to use any buffered filepath discovered from the crawler.
   # - Updates the state by scheduling work to the first buffered filepath if it's there.
   # - Returns the state if there's no filepath in the buffer to be processed.
-  defp schedule_work(state) do
-    case state[:filepath_buffer] do
-      [buffered | remaining] ->
-        schedule_work(
-          state
-          |> Map.update!(:filepath_buffer, fn -> remaining or [] end),
-          buffered
-        )
+  defp schedule_work(next_state) do
+    if Enum.empty?(next_state[:filepath_buffer]) &&
+         next_state[:directory_crawling_done] do
+      indexing_done(next_state)
+    else
+      [next_filepath | remaining] = next_state[:filepath_buffer]
 
-      _ ->
-        state
+      schedule_work(
+        next_state
+        |> Map.update!(:filepath_buffer, fn -> remaining or [] end),
+        next_filepath
+      )
     end
   end
 
   # Attempts to schedule work for a new filepath if the pool is open.
   # Otherwise, pushes the filepath into the buffer for further processing.
   defp schedule_work(state, filepath) do
-    next_state =
-      if length(state[:workers]) < @worker_pool_amount do
-        Map.update!(
-          state,
-          :workers,
-          &[
-            spawn_single_worker(filepath) | &1
-          ]
-        )
-      else
-        Map.update!(state, :filepath_buffer, &[filepath | &1])
-      end
-
-    if Enum.empty?(next_state[:filepath_buffer]) &&
-         next_state[:directory_crawling_done] do
-      indexing_done(next_state)
+    if length(state[:workers]) < @worker_pool_amount do
+      Map.update!(
+        state,
+        :workers,
+        &[
+          spawn_single_worker(filepath) | &1
+        ]
+      )
     else
-      next_state
+      Map.update!(state, :filepath_buffer, &[filepath | &1])
     end
   end
 end

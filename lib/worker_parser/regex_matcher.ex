@@ -1,11 +1,11 @@
 defmodule DocsetGenerator.WorkerParser.RegexMatcher do
   alias DocsetGenerator.WorkerParser.RegexMatcher
 
+  @doc """
+  More specific matchers take precedence over generic matchers.
+  Example: match_type, match_callback and match_function all refer to function types, but match_function matches generic functions with no qualifier, thus it comes last.
+  """
   def matcher_functions() do
-    """
-    More specific matchers take precedence over generic matchers.
-    Example: match_type, match_callback and match_function all refer to function types, but match_function matches generic functions with no qualifier, thus it comes last.
-    """
 
     [
       # type - topics, small docs, guides
@@ -51,15 +51,19 @@ defmodule DocsetGenerator.WorkerParser.RegexMatcher do
     end
   end
 
+  @doc """
+  Matches the pattern
+
+  ```
+  <h2 id="module-custom-channels" class="section-heading">
+    <a href="#module-custom-channels" class="hover-link">
+      <span class="icon-link" aria-hidden="true"></span>
+    </a>
+    Custom channels <-- guide name
+  </h2>
+  ```
+  """
   def match_guide(str) do
-    """
-    <h2 id="module-custom-channels" class="section-heading">
-      <a href="#module-custom-channels" class="hover-link">
-        <span class="icon-link" aria-hidden="true"></span>
-      </a>
-      Custom channels <-- guide name
-    </h2>
-    """
 
     case Regex.run(
            ~r/<h2 id="(module-.+)" class="section-heading".+>(.*)<\/h2>/,
@@ -73,9 +77,11 @@ defmodule DocsetGenerator.WorkerParser.RegexMatcher do
     end
   end
 
-  def match_module(str) do
-    """
-    <div id="content" class="content-inner">
+  @doc """
+  Matches the pattern
+
+  ```
+  <div id="content" class="content-inner">
     <h1>
       <small class="visible-xs">Phoenix v1.4.2</small>
       Phoenix.Socket <-- module name
@@ -85,8 +91,10 @@ defmodule DocsetGenerator.WorkerParser.RegexMatcher do
         <span class="sr-only">View Source</span>
       </a>
     </h1>
-    <section id="moduledoc">
-    """
+  <section id="moduledoc">
+  ```
+  """
+  def match_module(str) do
 
     case Regex.run(
            ~r/<h1><small class="visible-xs">Phoenix.+<\/small>(.*)<a h/,

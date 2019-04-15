@@ -1,32 +1,38 @@
 defmodule DocsetGenerator.WorkerParser.LineAccumulator do
-  alias DocsetGenerator.WorkerParser.RegexMatcher
+  alias DocsetGenerator.WorkerParser.{EntryCollector, RegexMatcher}
 
-  def start_link() do
-    Agent.start_link(fn -> %{:acc => "", :lines_read => 0} end)
+  def start_link(filepath) do
+    Agent.start_link(
+      fn ->
+        ""
+      end,
+      name: agent_name(filepath)
+    )
   end
+
+  def agent_name(filepath), do: {:global, filepath <> "--accumulator"}
 
   @doc """
   Accumulates the received line into a single string for regex matching.
   """
-  def add_line(line_acc, line, caller) do
+  def add_line(filepath, line) do
     case line do
-      line when is_binary(line) ->
-        Agent.update(line_acc, fn %{:lines_read => lr, :acc => acc} ->
+      :ok ->
+        EntryCollector.stop_collecting(filepath)
+
+      line ->
+        Agent.update(agent_name(filepath), fn acc ->
           accumulated_string = acc <> line
 
           case attempt_match_entry(accumulated_string) do
             [] ->
-              %{:lines_read => lr + 1, :acc => accumulated_string}
+              acc
 
             [entry] ->
-              send(caller, entry)
-              %{:lines_read => lr + 1, :acc => ""}
-
+              EntryCollector.collect_new_entry(filepath, entry)
+              ""
           end
         end)
-
-      _ ->
-        send(caller, :eol)
     end
   end
 
@@ -39,7 +45,7 @@ defmodule DocsetGenerator.WorkerParser.LineAccumulator do
       entry = match_fn.(accumulated_string)
       if is_nil(entry), do: {[nil], nil}, else: {:halt, entry}
     end)
-    |> Stream.filter(&not is_nil(&1))
+    |> Stream.filter(&(not is_nil(&1)))
     |> Enum.take(1)
   end
 end
