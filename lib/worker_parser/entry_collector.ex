@@ -1,6 +1,7 @@
 defmodule DocsetGenerator.WorkerParser.EntryCollector do
   defstruct [:task_pid, :filepath, :entries]
   alias DocsetGenerator.WorkerParser.EntryCollector
+  alias DocsetGenerator.Indexer
   use Agent
 
   def start_link(task_pid, filepath) do
@@ -15,7 +16,7 @@ defmodule DocsetGenerator.WorkerParser.EntryCollector do
     )
   end
 
-  defp agent_name(filepath), do: {:global, filepath <> "--collector"}
+  def agent_name(filepath), do: {:global, filepath <> "--collector"}
 
   def collect_new_entry(filepath, new_entry) do
     Agent.update(agent_name(filepath), fn state ->
@@ -25,6 +26,10 @@ defmodule DocsetGenerator.WorkerParser.EntryCollector do
   end
 
   def stop_collecting(filepath) do
-    Indexer.task_done(Agent.get(agent_name(filepath))[:task_pid])
+    agent_name(filepath)
+    |> Agent.get(fn state ->
+      state[:task_pid]
+    end)
+    |> Indexer.task_done()
   end
 end

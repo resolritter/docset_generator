@@ -1,5 +1,5 @@
 defmodule DocsetGenerator.Packager do
-  defstruct [:doc_directory, :docset_name, :destination ]
+  defstruct [:doc_directory, :docset_name, :destination, :parser]
 
   def package() do
   end

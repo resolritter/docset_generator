@@ -3,12 +3,15 @@ defmodule DocsetGenerator.Indexer do
   use Agent
 
   @worker_pool_amount 4
-  def start_indexing(root) do
-    Agent.start_link(fn -> index_root(root) end, name: __MODULE__)
-    request_work()
+  def start_link(packager) do
+    agent = Agent.start_link(fn -> index_root(packager) end, name: __MODULE__)
+    :files_supervisor
+    |> DirectoryCrawler.get_next_n(@worker_pool_amount)
+    |> Enum.map(&new_filepath(&1))
+    agent
   end
 
-  defp index_root(%Packager{:doc_directory => root} = packager) do
+  defp index_root(%Packager{:doc_directory => root, :parser => parser} = packager) do
     children = [
       {DirectoryCrawler, [root], name: :files_supervisor},
       {Task.Supervisor, name: :worker_supervisor}
@@ -22,14 +25,9 @@ defmodule DocsetGenerator.Indexer do
       :workers => [],
       :filepath_buffer => [],
       :directory_crawling_done => false,
-      :packager => packager
+      :packager => packager,
+      :parser_functions => parser.matcher_functions()
     }
-  end
-
-  defp request_work() do
-    :files_supervisor
-    |> DirectoryCrawler.get_next_n(@worker_pool_amount)
-    |> Enum.map(&new_filepath(&1))
   end
 
   def new_entry(entry) do
@@ -91,7 +89,7 @@ defmodule DocsetGenerator.Indexer do
   end
 
   defp spawn_single_worker(filepath) do
-    {:ok, pid} =
+    %Task{:pid => pid} =
       Task.Supervisor.async(
         :indexer_workersupervisor,
         fn -> WorkerParser.start_link(filepath) end
@@ -112,7 +110,7 @@ defmodule DocsetGenerator.Indexer do
 
       schedule_work(
         next_state
-        |> Map.update!(:filepath_buffer, fn -> remaining or [] end),
+        |> Map.update!(:filepath_buffer, fn -> remaining end),
         next_filepath
       )
     end

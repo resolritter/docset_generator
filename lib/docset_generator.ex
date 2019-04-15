@@ -1,5 +1,5 @@
 defmodule DocsetGenerator do
-  alias DocsetGenerator.Packager
+  alias DocsetGenerator.{Packager, Indexer}
 
   @doc """
   CLI entrypoint. Validates arguments and starts searching if validation passes.
@@ -61,10 +61,12 @@ defmodule DocsetGenerator do
 
     # Kernel.exit({doc_directory, docset_name, destination})
 
+    # TODO make the parser also configurable through CLI, by default it only parses ExDoc
     %Packager{
       :doc_directory => doc_directory,
       :docset_name => docset_name,
-      :destination => destination
+      :destination => destination,
+      :parser => DocsetGenerator.WorkerParser.RegexMatcher.Elixir
     }
   end
 
