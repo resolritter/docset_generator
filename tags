@@ -24,11 +24,12 @@ RegexMatcher	lib/worker_parser/regex_matcher.ex	/^defmodule DocsetGenerator.Work
 TODO	README.md	/^# TODO$/;"	c
 WorkerParser	lib/worker_parser.ex	/^defmodule DocsetGenerator.WorkerParser do$/;"	m
 add_line	lib/worker_parser/line_accumulator.ex	/^  def add_line(filepath, line) do$/;"	f
+agent_name	lib/indexer.ex	/^  def agent_name(), do: __MODULE__$/;"	f
 agent_name	lib/worker_parser/entry_collector.ex	/^  def agent_name(filepath), do: {:global, filepath <> "--collector"}$/;"	f
 agent_name	lib/worker_parser/line_accumulator.ex	/^  def agent_name(filepath), do: {:global, filepath <> "--accumulator"}$/;"	f
 args_valid?	lib/docset_generator.ex	/^  defp args_valid?(args) do$/;"	f
-attempt_match_entry	lib/worker_parser/line_accumulator.ex	/^  def attempt_match_entry(accumulated_string, parser_functions) do$/;"	f
-build_docset	lib/docset_generator.ex	/^  defp build_docset(final_indexer_state) do$/;"	f
+attempt_match_entry	lib/worker_parser/line_accumulator.ex	/^  def attempt_match_entry(parser_functions, accumulated_string) do$/;"	f
+build_docset	lib/docset_generator.ex	/^  def build_docset(final_indexer_state) do$/;"	f
 collect_new_entry	lib/worker_parser/entry_collector.ex	/^  def collect_new_entry(filepath, new_entry) do$/;"	f
 copy_directory_to	lib/packager/directory_copier.ex	/^  def copy_directory_to(%Packager{$/;"	f
 deps	mix.exs	/^  defp deps do$/;"	f
@@ -36,9 +37,9 @@ generate_package_name	lib/docset_generator.ex	/^  defp generate_package_name(doc
 get_next_n	lib/directory_crawler.ex	/^  def get_next_n(crawler, n) do$/;"	f
 greets the world	test/docset_generator_test.exs	/^  test "greets the world" do$/;"	t
 handle_call	lib/directory_crawler.ex	/^  def handle_call({:next_n, n}, _from, walker) do$/;"	f
-index_root	lib/indexer.ex	/^  defp index_root(%Packager{:doc_directory => root, :parser => parser} = packager) do$/;"	f
+index_root	lib/indexer.ex	/^  defp index_root($/;"	f
 indexing_done	lib/indexer.ex	/^  defp indexing_done(final_state) do$/;"	f
-init	lib/directory_crawler.ex	/^  def init(path) do$/;"	f
+init	lib/directory_crawler.ex	/^  def init(root) do$/;"	f
 main	lib/docset_generator.ex	/^  def main(args \\\\ []) do$/;"	f
 match_callback	lib/worker_parser/regex_matcher/elixir.ex	/^  def match_callback(str) do$/;"	f
 match_function	lib/worker_parser/regex_matcher/elixir.ex	/^  def match_function(str) do$/;"	f
@@ -51,14 +52,15 @@ matcher_functions	lib/worker_parser/regex_matcher/elixir.ex	/^  def matcher_func
 new_entry	lib/indexer.ex	/^  def new_entry(entry) do$/;"	f
 new_filepath	lib/indexer.ex	/^  def new_filepath(:ok) do$/;"	f
 new_filepath	lib/indexer.ex	/^  def new_filepath(filepath) do$/;"	f
-package	lib/packager.ex	/^  def package() do$/;"	f
+package	lib/packager.ex	/^  def package(final_indexer_state) do$/;"	f
 parse_entries	lib/worker_parser.ex	/^  def parse_entries(filepath, parser_functions) do$/;"	f
 project	mix.exs	/^  def project do$/;"	f
 report_error	lib/indexer.ex	/^  def report_error(error, filepath) do$/;"	f
 schedule_work	lib/indexer.ex	/^  defp schedule_work(next_state) do$/;"	f
-schedule_work	lib/indexer.ex	/^  defp schedule_work(state, filepath) do$/;"	f
+schedule_work	lib/indexer.ex	/^  defp schedule_work(next_state, filepath) do$/;"	f
 show_packaging_result	lib/packager.ex	/^  def show_packaging_result(packager) do$/;"	f
 spawn_single_worker	lib/indexer.ex	/^  defp spawn_single_worker(filepath) do$/;"	f
+start_link	lib/directory_crawler.ex	/^  def start_link(root), do: GenServer.start_link(__MODULE__, [root])$/;"	f
 start_link	lib/indexer.ex	/^  def start_link(packager) do$/;"	f
 start_link	lib/worker_parser.ex	/^  def start_link(filepath, parser_functions) do$/;"	f
 start_link	lib/worker_parser/entry_collector.ex	/^  def start_link(task_pid, filepath) do$/;"	f

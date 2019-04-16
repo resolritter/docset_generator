@@ -46,7 +46,7 @@ defmodule DocsetGenerator.WorkerParser.LineAccumulator do
   @doc """
   Tests against all regex functions and gets the first one that matches.
   """
-  def attempt_match_entry(accumulated_string, parser_functions) do
+  def attempt_match_entry(parser_functions, accumulated_string) do
     parser_functions
     |> Stream.transform(nil, fn parser_function, _ ->
       entry = parser_function.(accumulated_string)

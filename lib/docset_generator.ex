@@ -7,7 +7,7 @@ defmodule DocsetGenerator do
   def main(args \\ []) do
     args
     |> args_valid?
-    |> Indexer.start_indexing()
+    |> Indexer.start_link()
   end
 
   defp args_valid?(args) do
@@ -81,7 +81,7 @@ defmodule DocsetGenerator do
     end)
   end
 
-  defp build_docset(final_indexer_state) do
+  def build_docset(final_indexer_state) do
     final_indexer_state
     |> Packager.package()
     |> Packager.show_packaging_results()

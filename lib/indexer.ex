@@ -4,16 +4,26 @@ defmodule DocsetGenerator.Indexer do
 
   @worker_pool_amount 4
   def start_link(packager) do
-    agent = Agent.start_link(fn -> index_root(packager) end, name: __MODULE__)
-    :files_supervisor
+    agent = Agent.start_link(fn -> index_root(packager) end, name: agent_name())
+
+    # kick off some work right away, after the supervision tree has been started
+    DirectoryCrawler.server_name()
     |> DirectoryCrawler.get_next_n(@worker_pool_amount)
     |> Enum.map(&new_filepath(&1))
+
     agent
   end
 
-  defp index_root(%Packager{:doc_directory => root, :parser => parser} = packager) do
+  def agent_name(), do: __MODULE__
+
+  defp index_root(
+         %Packager{:doc_directory => root, :parser => parser} = packager
+       ) do
     children = [
-      {DirectoryCrawler, [root], name: :files_supervisor},
+      %{
+        :id => DirectoryCrawler,
+        :start => {DirectoryCrawler, :start_link, [root]}
+      },
       {Task.Supervisor, name: :worker_supervisor}
     ]
 
@@ -31,23 +41,23 @@ defmodule DocsetGenerator.Indexer do
   end
 
   def new_entry(entry) do
-    Agent.update(__MODULE__, fn state ->
+    Agent.update(agent_name(), fn state ->
       Map.update!(state, :entries, &[entry | &1])
     end)
   end
 
   def new_filepath(:ok) do
-    Agent.update(__MODULE__, fn state ->
+    Agent.update(agent_name(), fn state ->
       Map.update!(
         state,
         :directory_crawling_done,
-        fn -> true end
+        fn _ -> true end
       )
     end)
   end
 
   def new_filepath(filepath) do
-    Agent.update(__MODULE__, fn state ->
+    Agent.update(agent_name(), fn state ->
       schedule_work(filepath, state)
     end)
   end
@@ -73,7 +83,7 @@ defmodule DocsetGenerator.Indexer do
   end
 
   def report_error(error, filepath) do
-    Agent.update(__MODULE__, fn state ->
+    Agent.update(agent_name(), fn state ->
       Map.update!(
         state,
         :errors,
@@ -89,13 +99,15 @@ defmodule DocsetGenerator.Indexer do
   end
 
   defp spawn_single_worker(filepath) do
-    %Task{:pid => pid} =
-      Task.Supervisor.async(
-        :indexer_workersupervisor,
-        fn -> WorkerParser.start_link(filepath) end
-      )
+    Agent.get(agent_name(), fn %{:parser_functions => parser_functions} ->
+      %Task{pid: pid} =
+        Task.Supervisor.async(
+          :indexer_workersupervisor,
+          fn -> WorkerParser.start_link(filepath, parser_functions) end
+        )
 
-    pid
+      pid
+    end)
   end
 
   # Attempts to use any buffered filepath discovered from the crawler.
@@ -110,7 +122,7 @@ defmodule DocsetGenerator.Indexer do
 
       schedule_work(
         next_state
-        |> Map.update!(:filepath_buffer, fn -> remaining end),
+        |> Map.update!(:filepath_buffer, fn _ -> remaining or [] end),
         next_filepath
       )
     end
@@ -118,17 +130,17 @@ defmodule DocsetGenerator.Indexer do
 
   # Attempts to schedule work for a new filepath if the pool is open.
   # Otherwise, pushes the filepath into the buffer for further processing.
-  defp schedule_work(state, filepath) do
-    if length(state[:workers]) < @worker_pool_amount do
+  defp schedule_work(next_state, filepath) do
+    if length(next_state[:workers]) < @worker_pool_amount do
       Map.update!(
-        state,
+        next_state,
         :workers,
         &[
           spawn_single_worker(filepath) | &1
         ]
       )
     else
-      Map.update!(state, :filepath_buffer, &[filepath | &1])
+      Map.update!(next_state, :filepath_buffer, &[filepath | &1])
     end
   end
 end
