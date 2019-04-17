@@ -1,5 +1,5 @@
 defmodule DocsetGenerator do
-  alias DocsetGenerator.{Packager, Indexer, ProcessRegistry}
+  alias DocsetGenerator.{Packager, Indexer, ViaTupleRegistry}
 
   @doc """
   CLI entrypoint. Validates arguments and starts indexing if validation passes.
@@ -8,7 +8,7 @@ defmodule DocsetGenerator do
     packager = args_valid?(args)
 
     if packager do
-      ProcessRegistry.start_link(keys: :unique, name: ProcessRegistry)
+      ViaTupleRegistry.start_link(keys: :unique, name: ProcessRegistry)
       Indexer.start_link(packager)
     end
   end

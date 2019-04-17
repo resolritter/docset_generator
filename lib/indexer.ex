@@ -3,7 +3,7 @@ defmodule DocsetGenerator.Indexer do
     DirectoryCrawler,
     WorkerParser,
     Packager,
-    ProcessRegistry
+    ViaTupleRegistry
   }
 
   use Agent
@@ -19,7 +19,7 @@ defmodule DocsetGenerator.Indexer do
     Agent.start_link(fn -> initial_state end, name: via_tuple())
   end
 
-  def via_tuple(), do: {:via, ProcessRegistry, {__MODULE__}}
+  def via_tuple(), do: {:via, ViaTupleRegistry, {__MODULE__}}
 
   defp init(%Packager{:doc_directory => root, :parser => parser} = packager) do
     children = [

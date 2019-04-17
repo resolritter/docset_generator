@@ -1,4 +1,4 @@
-defmodule DocsetGenerator.ProcessRegistry do
+defmodule DocsetGenerator.ViaTupleRegistry do
   def start_link(opts), do: Registry.start_link(opts)
 
   # the `:via` option expects a module that exports

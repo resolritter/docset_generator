@@ -1,5 +1,5 @@
 defmodule DocsetGenerator.DirectoryCrawler do
-  alias DocsetGenerator.ProcessRegistry
+  alias DocsetGenerator.ViaTupleRegistry
   use GenServer
 
   def start_link(root),
@@ -10,7 +10,7 @@ defmodule DocsetGenerator.DirectoryCrawler do
     {:ok, DirWalker.start_link(root, matching: ~r'\.html')}
   end
 
-  def via_tuple(), do: {:via, ProcessRegistry, {__MODULE__}}
+  def via_tuple(), do: {:via, ViaTupleRegistry, {__MODULE__}}
 
   def get_next_n(n), do: GenServer.call(via_tuple(), {:next_n, n})
 
