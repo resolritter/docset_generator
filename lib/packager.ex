@@ -5,7 +5,7 @@ defmodule DocsetGenerator.Packager do
     exit(final_indexer_state)
   end
 
-  def show_packaging_result(packager) do
+  def show_packaging_results(packager) do
     exit(packager)
   end
 end

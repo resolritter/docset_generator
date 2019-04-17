@@ -4,6 +4,7 @@ defmodule DocsetGenerator.WorkerParser.LineAccumulator do
   def start_link(filepath, parser_functions) do
     Agent.start_link(
       fn ->
+        Process.register(self(), agent_id(filepath))
         %{
           :parser_functions => parser_functions,
           :acc => ""
@@ -13,7 +14,8 @@ defmodule DocsetGenerator.WorkerParser.LineAccumulator do
     )
   end
 
-  def agent_name(filepath), do: {:global, filepath <> "--accumulator"}
+  def agent_name(filepath), do: {:via, Process, agent_id(filepath)}
+  defp agent_id(filepath), do: {__MODULE__, filepath <> "--accumulator"}
 
   @doc """
   Accumulates the received line into a single string for regex matching.

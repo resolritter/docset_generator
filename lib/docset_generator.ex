@@ -1,13 +1,16 @@
 defmodule DocsetGenerator do
-  alias DocsetGenerator.{Packager, Indexer}
+  alias DocsetGenerator.{Packager, Indexer, ProcessRegistry}
 
   @doc """
-  CLI entrypoint. Validates arguments and starts searching if validation passes.
+  CLI entrypoint. Validates arguments and starts indexing if validation passes.
   """
   def main(args \\ []) do
-    args
-    |> args_valid?
-    |> Indexer.start_link()
+    packager = args_valid?(args)
+
+    if packager do
+      ProcessRegistry.start_link(keys: :unique, name: ProcessRegistry)
+      Indexer.start_link(packager)
+    end
   end
 
   defp args_valid?(args) do

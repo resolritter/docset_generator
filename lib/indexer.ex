@@ -1,29 +1,29 @@
 defmodule DocsetGenerator.Indexer do
-  alias DocsetGenerator.{DirectoryCrawler, WorkerParser, Packager}
+  alias DocsetGenerator.{
+    DirectoryCrawler,
+    WorkerParser,
+    Packager,
+    ProcessRegistry
+  }
+
   use Agent
 
   @worker_pool_amount 4
   def start_link(packager) do
-    agent = Agent.start_link(fn -> index_root(packager) end, name: agent_name())
+    initial_state = init(packager)
 
     # kick off some work right away, after the supervision tree has been started
-    DirectoryCrawler.server_name()
-    |> DirectoryCrawler.get_next_n(@worker_pool_amount)
+    DirectoryCrawler.get_next_n(@worker_pool_amount)
     |> Enum.map(&new_filepath(&1))
 
-    agent
+    Agent.start_link(fn -> initial_state end, name: via_tuple())
   end
 
-  def agent_name(), do: __MODULE__
+  def via_tuple(), do: {:via, ProcessRegistry, {__MODULE__}}
 
-  defp index_root(
-         %Packager{:doc_directory => root, :parser => parser} = packager
-       ) do
+  defp init(%Packager{:doc_directory => root, :parser => parser} = packager) do
     children = [
-      %{
-        :id => DirectoryCrawler,
-        :start => {DirectoryCrawler, :start_link, [root]}
-      },
+      {DirectoryCrawler, [root]},
       {Task.Supervisor, name: :worker_supervisor}
     ]
 
@@ -41,13 +41,13 @@ defmodule DocsetGenerator.Indexer do
   end
 
   def new_entry(entry) do
-    Agent.update(agent_name(), fn state ->
+    Agent.update(via_tuple(), fn state ->
       Map.update!(state, :entries, &[entry | &1])
     end)
   end
 
   def new_filepath(:ok) do
-    Agent.update(agent_name(), fn state ->
+    Agent.update(via_tuple(), fn state ->
       Map.update!(
         state,
         :directory_crawling_done,
@@ -57,7 +57,7 @@ defmodule DocsetGenerator.Indexer do
   end
 
   def new_filepath(filepath) do
-    Agent.update(agent_name(), fn state ->
+    Agent.update(via_tuple(), fn state ->
       schedule_work(filepath, state)
     end)
   end
@@ -83,7 +83,7 @@ defmodule DocsetGenerator.Indexer do
   end
 
   def report_error(error, filepath) do
-    Agent.update(agent_name(), fn state ->
+    Agent.update(via_tuple(), fn state ->
       Map.update!(
         state,
         :errors,
@@ -99,7 +99,7 @@ defmodule DocsetGenerator.Indexer do
   end
 
   defp spawn_single_worker(filepath) do
-    Agent.get(agent_name(), fn %{:parser_functions => parser_functions} ->
+    Agent.get(via_tuple(), fn %{:parser_functions => parser_functions} ->
       %Task{pid: pid} =
         Task.Supervisor.async(
           :indexer_workersupervisor,
