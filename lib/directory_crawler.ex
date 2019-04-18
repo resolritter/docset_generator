@@ -6,9 +6,7 @@ defmodule DocsetGenerator.DirectoryCrawler do
     do: GenServer.start_link(__MODULE__, [root], name: via_tuple())
 
   @impl GenServer
-  def init(root) do
-    {:ok, DirWalker.start_link(root, matching: ~r'\.html')}
-  end
+  def init(root), do: DirWalker.start_link(root, matching: ~r'\.html')
 
   def via_tuple(), do: {:via, ViaTupleRegistry, {__MODULE__}}
 
@@ -16,7 +14,6 @@ defmodule DocsetGenerator.DirectoryCrawler do
 
   @impl GenServer
   def handle_call({:next_n, n}, _from, walker) do
-    {_, directories} = DirWalker.next(walker, n)
-    {:reply, directories, walker}
+    {:reply, DirWalker.next(walker, n), walker}
   end
 end

@@ -1,21 +1,21 @@
 defmodule DocsetGenerator.WorkerParser.LineAccumulator do
   alias DocsetGenerator.WorkerParser.EntryCollector
+  alias DocsetGenerator.ViaTupleRegistry
 
   def start_link(filepath, parser_functions) do
     Agent.start_link(
       fn ->
-        Process.register(self(), agent_id(filepath))
         %{
           :parser_functions => parser_functions,
           :acc => ""
         }
       end,
-      name: agent_name(filepath)
+      name: via_tuple(filepath)
     )
   end
 
-  def agent_name(filepath), do: {:via, Process, agent_id(filepath)}
-  defp agent_id(filepath), do: {__MODULE__, filepath <> "--accumulator"}
+  def via_tuple(filepath),
+    do: {:via, ViaTupleRegistry, {filepath <> "--accumulator"}}
 
   @doc """
   Accumulates the received line into a single string for regex matching.
@@ -26,20 +26,20 @@ defmodule DocsetGenerator.WorkerParser.LineAccumulator do
         EntryCollector.stop_collecting(filepath)
 
       line ->
-        Agent.update(agent_name(filepath), fn %{
-                                                :parser_functions =>
-                                                  parser_functions,
-                                                :acc => acc
-                                              } ->
+        Agent.update(via_tuple(filepath), fn %{
+                                               :parser_functions =>
+                                                 parser_functions,
+                                               :acc => acc
+                                             } ->
           accumulated_string = acc <> line
 
           case attempt_match_entry(parser_functions, accumulated_string) do
             [] ->
-              acc
+              %{:parser_functions => parser_functions, :acc => acc}
 
             [entry] ->
               EntryCollector.collect_new_entry(filepath, entry)
-              %{:parser_functions => parser_functions, :acc => acc}
+              %{:parser_functions => parser_functions, :acc => ""}
           end
         end)
     end
@@ -54,7 +54,7 @@ defmodule DocsetGenerator.WorkerParser.LineAccumulator do
       entry = parser_function.(accumulated_string)
       if is_nil(entry), do: {[nil], nil}, else: {:halt, entry}
     end)
-    |> Stream.filter(&(not is_nil(&1)))
+    |> Stream.filter(&not is_nil(&1))
     |> Enum.take(1)
   end
 end

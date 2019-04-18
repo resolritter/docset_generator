@@ -1,4 +1,5 @@
 defmodule DocsetGenerator.WorkerParser.EntryCollector do
+  alias DocsetGenerator.ViaTupleRegistry
   alias DocsetGenerator.Indexer
   use Agent
 
@@ -7,19 +8,20 @@ defmodule DocsetGenerator.WorkerParser.EntryCollector do
       fn ->
         task_pid
       end,
-      name: agent_name(filepath)
+      name: via_tuple(filepath)
     )
   end
 
-  def agent_name(filepath), do: {:global, filepath <> "--collector"}
+  def via_tuple(filepath),
+    do: {:via, ViaTupleRegistry, {filepath <> "--collector"}}
 
   def collect_new_entry(filepath, new_entry) do
     Indexer.new_entry(Map.put_new(new_entry, :filepath, filepath))
   end
 
   def stop_collecting(filepath) do
-    agent_name(filepath)
-    |> Agent.get(&(&1))
+    via_tuple(filepath)
+    |> Agent.get(& &1)
     |> Indexer.task_done()
   end
 end

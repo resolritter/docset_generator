@@ -8,7 +8,7 @@ defmodule DocsetGenerator do
     packager = args_valid?(args)
 
     if packager do
-      ViaTupleRegistry.start_link(keys: :unique, name: ProcessRegistry)
+      ViaTupleRegistry.start_link(keys: :unique, name: ViaTupleRegistry)
       Indexer.start_link(packager)
     end
   end
@@ -42,14 +42,15 @@ defmodule DocsetGenerator do
     argv_len = length(argv)
 
     if argv_len < 1 do
-      exit(IO.puts("Missing required argument: doc_directory."))
+      IO.puts("Missing required argument: doc_directory.")
+      exit(:ERR_invalid_args)
     end
 
     [doc_directory | optional_args] = argv
 
     unless File.dir?(doc_directory) do
       IO.puts("Argument provided is not a directory: '#{doc_directory}'")
-      Kernel.exit(:not_directory)
+      exit(:ERR_invalid_args)
     end
 
     docset_name =

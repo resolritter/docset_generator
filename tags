@@ -20,14 +20,12 @@ LineAccumulator	lib/worker_parser/line_accumulator.ex	/^defmodule DocsetGenerato
 MixProject	mix.exs	/^defmodule DocsetGenerator.MixProject do$/;"	m
 Packager	lib/packager.ex	/^defmodule DocsetGenerator.Packager do$/;"	m
 Persistence	README.md	/^## Persistence$/;"	s
-ProcessRegistry	lib/process_registry.ex	/^defmodule DocsetGenerator.ProcessRegistry do$/;"	m
 RegexMatcher	lib/worker_parser/regex_matcher.ex	/^defmodule DocsetGenerator.WorkerParser.RegexMatcher do$/;"	m
 TODO	README.md	/^# TODO$/;"	c
+ViaTupleRegistry	lib/process_registry.ex	/^defmodule DocsetGenerator.ViaTupleRegistry do$/;"	m
+ViaTupleRegistry	lib/via_tuple_registry.ex	/^defmodule DocsetGenerator.ViaTupleRegistry do$/;"	m
 WorkerParser	lib/worker_parser.ex	/^defmodule DocsetGenerator.WorkerParser do$/;"	m
 add_line	lib/worker_parser/line_accumulator.ex	/^  def add_line(filepath, line) do$/;"	f
-agent_id	lib/worker_parser/line_accumulator.ex	/^  defp agent_id(filepath), do: {__MODULE__, filepath <> "--accumulator"}$/;"	f
-agent_name	lib/worker_parser/entry_collector.ex	/^  def agent_name(filepath), do: {:global, filepath <> "--collector"}$/;"	f
-agent_name	lib/worker_parser/line_accumulator.ex	/^  def agent_name(filepath), do: {:via, Process, agent_id(filepath)}$/;"	f
 args_valid?	lib/docset_generator.ex	/^  defp args_valid?(args) do$/;"	f
 attempt_match_entry	lib/worker_parser/line_accumulator.ex	/^  def attempt_match_entry(parser_functions, accumulated_string) do$/;"	f
 build_docset	lib/docset_generator.ex	/^  def build_docset(final_indexer_state) do$/;"	f
@@ -39,7 +37,7 @@ get_next_n	lib/directory_crawler.ex	/^  def get_next_n(n), do: GenServer.call(vi
 greets the world	test/docset_generator_test.exs	/^  test "greets the world" do$/;"	t
 handle_call	lib/directory_crawler.ex	/^  def handle_call({:next_n, n}, _from, walker) do$/;"	f
 indexing_done	lib/indexer.ex	/^  defp indexing_done(final_state) do$/;"	f
-init	lib/directory_crawler.ex	/^  def init(root) do$/;"	f
+init	lib/directory_crawler.ex	/^  def init(root), do: DirWalker.start_link(root, matching: ~r'\\.html')$/;"	f
 init	lib/indexer.ex	/^  defp init(%Packager{:doc_directory => root, :parser => parser} = packager) do$/;"	f
 main	lib/docset_generator.ex	/^  def main(args \\\\ []) do$/;"	f
 match_callback	lib/worker_parser/regex_matcher/elixir.ex	/^  def match_callback(str) do$/;"	f
@@ -57,21 +55,28 @@ package	lib/packager.ex	/^  def package(final_indexer_state) do$/;"	f
 parse_entries	lib/worker_parser.ex	/^  def parse_entries(filepath, parser_functions) do$/;"	f
 project	mix.exs	/^  def project do$/;"	f
 register_name	lib/process_registry.ex	/^  def register_name(name, pid),$/;"	f
+register_name	lib/via_tuple_registry.ex	/^  def register_name(name, pid),$/;"	f
 report_error	lib/indexer.ex	/^  def report_error(error, filepath) do$/;"	f
 schedule_work	lib/indexer.ex	/^  defp schedule_work(next_state) do$/;"	f
 schedule_work	lib/indexer.ex	/^  defp schedule_work(next_state, filepath) do$/;"	f
 send	lib/process_registry.ex	/^  defdelegate send(dest, message), to: Registry$/;"	d
+send	lib/via_tuple_registry.ex	/^  defdelegate send(dest, message), to: Registry$/;"	d
 show_packaging_results	lib/packager.ex	/^  def show_packaging_results(packager) do$/;"	f
-spawn_single_worker	lib/indexer.ex	/^  defp spawn_single_worker(filepath) do$/;"	f
+spawn_single_worker	lib/indexer.ex	/^  defp spawn_single_worker(filepath, parser_functions) do$/;"	f
 start_link	lib/directory_crawler.ex	/^  def start_link(root),$/;"	f
 start_link	lib/indexer.ex	/^  def start_link(packager) do$/;"	f
 start_link	lib/process_registry.ex	/^  def start_link(opts), do: Registry.start_link(opts)$/;"	f
+start_link	lib/via_tuple_registry.ex	/^  def start_link(opts), do: Registry.start_link(opts)$/;"	f
 start_link	lib/worker_parser.ex	/^  def start_link(filepath, parser_functions) do$/;"	f
 start_link	lib/worker_parser/entry_collector.ex	/^  def start_link(task_pid, filepath) do$/;"	f
 start_link	lib/worker_parser/line_accumulator.ex	/^  def start_link(filepath, parser_functions) do$/;"	f
 stop_collecting	lib/worker_parser/entry_collector.ex	/^  def stop_collecting(filepath) do$/;"	f
 task_done	lib/indexer.ex	/^  def task_done(done_task_pid) do$/;"	f
 unregister_name	lib/process_registry.ex	/^  def unregister_name(name),$/;"	f
-via_tuple	lib/directory_crawler.ex	/^  def via_tuple(), do: {:via, ProcessRegistry, {__MODULE__}}$/;"	f
-via_tuple	lib/indexer.ex	/^  def via_tuple(), do: {:via, ProcessRegistry, {__MODULE__}}$/;"	f
+unregister_name	lib/via_tuple_registry.ex	/^  def unregister_name(name),$/;"	f
+via_tuple	lib/directory_crawler.ex	/^  def via_tuple(), do: {:via, ViaTupleRegistry, {__MODULE__}}$/;"	f
+via_tuple	lib/indexer.ex	/^  def via_tuple(), do: {:via, ViaTupleRegistry, {__MODULE__}}$/;"	f
+via_tuple	lib/worker_parser/entry_collector.ex	/^  def via_tuple(filepath),$/;"	f
+via_tuple	lib/worker_parser/line_accumulator.ex	/^  def via_tuple(filepath),$/;"	f
 whereis_name	lib/process_registry.ex	/^  def whereis_name(name), do: (apply(Registry, :whereis_name, [{__MODULE__, name}]))$/;"	f
+whereis_name	lib/via_tuple_registry.ex	/^  def whereis_name(name), do: apply(Registry, :whereis_name, [{__MODULE__, name}])$/;"	f
